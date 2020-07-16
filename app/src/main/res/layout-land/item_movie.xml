@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/gradient_background">
+
+    <RelativeLayout
+        android:id="@+id/container"
+        android:layout_width="450dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="165dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/rounded_view">
+
+        <ImageView
+            android:id="@+id/ivPoster"
+            android:layout_width="169dp"
+            android:layout_height="94dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="26dp"
+            android:layout_marginTop="12dp"
+            tools:srcCompat="@tools:sample/avatars" />
+
+        <TextView
+            android:id="@+id/ratingBar"
+            android:layout_width="39dp"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/tvTitle"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="13dp"
+            android:layout_marginBottom="-60dp"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="5.7" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/ivPoster"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="3dp"
+            android:layout_toEndOf="@+id/ivPoster"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            tools:text="Onward" />
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="104dp"
+            android:layout_height="19dp"
+            android:layout_alignBottom="@+id/ratingBar"
+            android:layout_marginStart="7dp"
+            android:layout_marginBottom="2dp"
+            android:layout_toEndOf="@+id/ivPoster"
+            android:textColor="#FFFFFF"
+            tools:text="2020-02-29" />
+
+    </RelativeLayout>
+
+</RelativeLayout>
