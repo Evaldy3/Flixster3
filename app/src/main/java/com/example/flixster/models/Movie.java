@@ -29,12 +29,12 @@ public class Movie {
         movieId = jsonObject.getInt("id");
         date = jsonObject.getString("release_date");
     }
-     public static List<Movie> fromJsonArray(JSONArray movieJsonArray) throws JSONException {
-        List<Movie> movies = new ArrayList<>();
-        for (int i = 0; i < movieJsonArray.length(); i++){
-            movies.add(new Movie(movieJsonArray.getJSONObject(i)));
+     public static List<Movie> fromJsonArray(JSONArray jsonArray) throws JSONException {
+        List<Movie>list = new ArrayList<>();
+        for (int i = 0; i < jsonArray.length(); i++){
+            list.add(new Movie(jsonArray.getJSONObject(i)));
         }
-        return movies;
+        return list;
      }
 
     public String getPosterPath() {

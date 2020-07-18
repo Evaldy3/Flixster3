@@ -1,5 +1,6 @@
 package com.example.flixster.adapters;
 
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -7,105 +8,235 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
+import com.bumptech.glide.request.RequestOptions;
+import com.codepath.asynchttpclient.AsyncHttpClient;
+import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 import com.example.flixster.DetailActivity;
 import com.example.flixster.R;
+import com.example.flixster.YoutubePlayerActivity;
 import com.example.flixster.models.Movie;
 
-import org.parceler.Parcel;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.parceler.Parcels;
 
 import java.util.List;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import okhttp3.Headers;
+import okhttp3.internal.http2.Header;
 
+public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
+    private static final String TRAILERS_API = "https://api.themoviedb.org/3/movie/%d/videos?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
+    private final int SIMPLE = 0,POPULAR = 1;
+    private Context context;
+    private List<Movie> moviesList;
+    private int radius = 30;
 
-public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
-
-    Context context;
-    List<Movie>movies;
-
-    public MovieAdapter(Context context, List<Movie> movies) {
+    public MovieAdapter(List<Movie> moviesList,Context context) {
+        this.moviesList = moviesList;
         this.context = context;
-        this.movies = movies;
     }
-    // Involves the populating data into the item through holder
+
+    @Override
+    public int getItemViewType(int position) {
+        if(Double.valueOf(moviesList.get(position).getRating())>5.0){
+            return POPULAR;
+        }else {
+            return SIMPLE;
+        }
+    }
+
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Log.d("MovieAdapter" , "onCreateViewHolder");
-       View movieView =  LayoutInflater.from(context).inflate(R.layout.item_movie , parent , false);
-        return new ViewHolder(movieView);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+        RecyclerView.ViewHolder viewHolder = null;
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        switch (viewType){
+            case SIMPLE:
+                View mView = inflater.inflate(R.layout.item_movie,parent,false);
+                viewHolder = new ViewHolderSimple(mView);
+                break;
+            case POPULAR:
+                View view = inflater.inflate(R.layout.popular_movie,parent,false);
+                viewHolder = new ViewHolderPopular(view);
+                break;
+        }
+
+        return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Log.d("MovieAdapter" , "onBindViewHolder" + position);
-        // Get the movie at the passed in  position
-        Movie movie = movies.get(position);
-        // Bind the movie data in viewHolder
-        holder.bind(movie);
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        switch (holder.getItemViewType()){
+            case SIMPLE:
+                ViewHolderSimple viewHolderSimple = (ViewHolderSimple) holder;
+                bindDatatoViewHolderSimple(viewHolderSimple,position);
+                break;
+            case POPULAR:
+                ViewHolderPopular viewHolderPopular = (ViewHolderPopular) holder;
+                bindDatatoViewHolderPopular(viewHolderPopular,position);
+                break;
+        }
 
     }
-    // Return the total count of items on the list
+
+    private void bindDatatoViewHolderSimple(ViewHolderSimple viewHolderSimple, int position) {
+        final Movie movies = moviesList.get(position);
+        RelativeLayout container = viewHolderSimple.container;
+        TextView tvTitle = viewHolderSimple.tvTitle;
+        tvTitle.setText(movies.getTitle());
+        TextView ratingBar = viewHolderSimple.ratingBar;
+        ratingBar.setText(movies.getRating());
+        TextView date = viewHolderSimple.date;
+        date.setText(movies.getDate());
+        String imageUrl;
+        // if phone is in landscape
+        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+            // imageUrl = back drop image
+            imageUrl = movies.getBackdrop_path();
+        }else{
+            // else imageUrl  = poster image
+            imageUrl = movies.getPosterPath();
+        }
+        int radius = 20;
+        int margin = 5;
+        ImageView ivPoster = viewHolderSimple.ivPoster;
+        Glide.with(context)
+                .load(imageUrl)
+                .transform(new RoundedCornersTransformation(radius , margin))
+                .into(ivPoster);
+
+        container.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(context , DetailActivity.class);
+                i.putExtra("movie", Parcels.wrap(movies));
+                context.startActivity(i);
+            }
+        });
+    }
+
+    public void  bindDatatoViewHolderPopular(ViewHolderPopular viewHolderPopular, int position){
+        final Movie movies = moviesList.get(position);
+        ImageView ivBackdrop = viewHolderPopular.backdrop;
+        FrameLayout layout = viewHolderPopular.layout;
+
+        TextView tvTitle = viewHolderPopular.tvPopTitle;
+        tvTitle.setText(movies.getTitle());
+        TextView tvOverview = viewHolderPopular.tvPopOverview;
+        tvOverview.setText(movies.getOverview());
+
+        String imgUrl = movies.getBackdrop_path();
+        Glide.with(context)
+                .load(imgUrl)
+                .apply(new RequestOptions().placeholder(R.drawable.placeholder).error(R.drawable.error))
+                .apply(new RequestOptions().transforms(new CenterInside(),new RoundedCorners(radius)))
+                .into(ivBackdrop);
+
+        layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //FetchTrailerKey
+                Log.i("IdAdapter", String.valueOf(movies.getMovieId()));
+                fetchTrailerKey(movies.getMovieId());
+            }
+        });
+        //when long clicked show details
+        layout.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent intent = new Intent(context, DetailActivity.class);
+                intent.putExtra("movies", Parcels.wrap(movies));
+                context.startActivity(intent);
+                return true;
+            }
+        });
+    }
+
+    private void fetchTrailerKey(int movieId) {
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.get(String.format(TRAILERS_API,Integer.parseInt(String.valueOf(movieId))),new JsonHttpResponseHandler(){
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                try {
+                    JSONObject array =json.jsonObject;
+                    if(array.length()==0){
+                        return;
+                    }
+                    JSONObject jsonObject = array.getJSONObject(String.valueOf(0));
+                    String trailer_key = jsonObject.getString("key");
+                    Log.i("KeyAdapter","key "+trailer_key);
+
+                    Intent intent = new Intent(context, YoutubePlayerActivity.class);
+                    intent.putExtra("key",trailer_key);
+                    context.startActivity(intent);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    Toast.makeText(context,"Error : "+e,Toast.LENGTH_LONG).show();
+                }
+
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+
+            }
+
+        });
+    }
+
     @Override
     public int getItemCount() {
-        return movies.size();
+        return 0;
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
-        TextView tvTitle;
-       TextView ratingBar;
-        ImageView ivPoster;
-        RelativeLayout container;
-        TextView date;
+    public  class ViewHolderPopular extends RecyclerView.ViewHolder{
+        public ImageView backdrop;
+        public TextView tvPopTitle;
+        public TextView tvPopOverview;
+        public FrameLayout layout;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolderPopular(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvTitle);
-           ivPoster  = itemView.findViewById(R.id.ivPoster);
-            container  = itemView.findViewById(R.id.container);
-            ratingBar = itemView.findViewById(R.id.ratingBar);
-            date = itemView.findViewById(R.id.date);
-
+            backdrop = (ImageView) itemView.findViewById(R.id.ivBackdrop);
+            tvPopTitle = (TextView) itemView.findViewById(R.id.tvPopTitle);
+            tvPopOverview = (TextView) itemView.findViewById(R.id.tvPopOverview);
+            layout = (FrameLayout) itemView.findViewById(R.id.trailerPopularLayout);
         }
 
-        public void bind(final Movie movie) {
-            tvTitle.setText(movie.getTitle());
-            ratingBar.setText(movie.getRating());
-            date.setText(movie.getDate());
-            String imageUrl;
-            // if phone is in landscape
-            if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
-                // imageUrl = back drop image
-                imageUrl = movie.getBackdrop_path();
-            }else{
-                // else imageUrl  = poster image
-                imageUrl = movie.getPosterPath();
-            }
-            int radius = 20;
-            int margin = 5;
-            Glide.with(context)
-                    .load(imageUrl)
-                    .transform(new RoundedCornersTransformation(radius , margin))
-                   .into(ivPoster);
 
-            container.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent i = new Intent(context , DetailActivity.class);
-                    i.putExtra("movie", Parcels.wrap(movie));
-                    context.startActivity(i);
-                }
-            });
+    }
+    public class ViewHolderSimple extends RecyclerView.ViewHolder{
+        public ImageView ivPoster ;
+        public TextView ratingBar;
+        public TextView tvTitle;
+        public TextView date;
+       public  RelativeLayout container;
+
+        public ViewHolderSimple(@NonNull View itemView) {
+            super(itemView);
+            ivPoster = (ImageView) itemView.findViewById(R.id.ivPoster);
+            ratingBar = (TextView) itemView.findViewById(R.id.ratingBar);
+            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
+            date = (TextView) itemView.findViewById(R.id.date);
         }
     }
+
+
 }
