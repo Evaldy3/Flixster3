@@ -28,7 +28,6 @@ import com.example.flixster.R;
 import com.example.flixster.YoutubePlayerActivity;
 import com.example.flixster.models.Movie;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.parceler.Parcels;
@@ -37,23 +36,22 @@ import java.util.List;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
 import okhttp3.Headers;
-import okhttp3.internal.http2.Header;
 
-public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>  {
-    private static final String TRAILERS_API = "https://api.themoviedb.org/3/movie/%d/videos?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
-    private final int SIMPLE = 0,POPULAR = 1;
-    private Context context;
-    private List<Movie> moviesList;
-    private int radius = 30;
+public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>   {
+    List<Movie> movies;
+    Context context ;
+    final int SIMPLE = 0,POPULAR = 1;
+    int radius = 30;
+    final String TRAILERS_API = "https://api.themoviedb.org/3/movie/%d/videos?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
 
-    public MovieAdapter(List<Movie> moviesList,Context context) {
-        this.moviesList = moviesList;
+    public MovieAdapter(List<Movie> movies, Context context) {
+        this.movies = movies;
         this.context = context;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if(Double.valueOf(moviesList.get(position).getRating())>5.0){
+        if(Double.valueOf(movies.get(position).getRating())>7.0){
             return POPULAR;
         }else {
             return SIMPLE;
@@ -75,6 +73,8 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 View view = inflater.inflate(R.layout.popular_movie,parent,false);
                 viewHolder = new ViewHolderPopular(view);
                 break;
+            default:
+
         }
 
         return viewHolder;
@@ -93,25 +93,64 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 break;
         }
 
+
+    }
+    @Override
+    public int getItemCount() {
+        return movies.size();
     }
 
+    public class ViewHolderPopular extends RecyclerView.ViewHolder{
+         ImageView backdrop;
+         ImageView imageView2;
+         TextView tvPopTitle;
+         TextView tvPopOverview;
+         FrameLayout layout;
+
+        public  ViewHolderPopular(@NonNull View itemView) {
+            super(itemView);
+            backdrop = (ImageView) itemView.findViewById(R.id.ivBackdrop);
+            imageView2 = (ImageView) itemView.findViewById(R.id.imageView2);
+            tvPopTitle = (TextView) itemView.findViewById(R.id.tvPopTitle);
+            tvPopOverview = (TextView) itemView.findViewById(R.id.tvPopOverview);
+            layout = (FrameLayout) itemView.findViewById(R.id.trailerPopularLayout);
+        }
+    }
+
+    public  class ViewHolderSimple extends RecyclerView.ViewHolder{
+        ImageView ivPoster ;
+        TextView ratingBar;
+        TextView tvTitle;
+        TextView date;
+        RelativeLayout container;
+
+        public ViewHolderSimple(@NonNull View itemView) {
+            super(itemView);
+            ivPoster = (ImageView) itemView.findViewById(R.id.ivPoster);
+            ratingBar = (TextView) itemView.findViewById(R.id.ratingBar);
+            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
+            date = (TextView) itemView.findViewById(R.id.date);
+            container = (RelativeLayout) itemView.findViewById(R.id.container);
+        }
+    }
     private void bindDatatoViewHolderSimple(ViewHolderSimple viewHolderSimple, int position) {
-        final Movie movies = moviesList.get(position);
+        final Movie movie = movies.get(position);
+
         RelativeLayout container = viewHolderSimple.container;
         TextView tvTitle = viewHolderSimple.tvTitle;
-        tvTitle.setText(movies.getTitle());
+        tvTitle.setText(movie.getTitle());
         TextView ratingBar = viewHolderSimple.ratingBar;
-        ratingBar.setText(movies.getRating());
+        ratingBar.setText(movie.getRating());
         TextView date = viewHolderSimple.date;
-        date.setText(movies.getDate());
+        date.setText(movie.getDate());
         String imageUrl;
         // if phone is in landscape
         if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
             // imageUrl = back drop image
-            imageUrl = movies.getBackdrop_path();
+            imageUrl = movie.getBackdrop_path();
         }else{
             // else imageUrl  = poster image
-            imageUrl = movies.getPosterPath();
+            imageUrl = movie.getPosterPath();
         }
         int radius = 20;
         int margin = 5;
@@ -125,35 +164,36 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(context , DetailActivity.class);
-                i.putExtra("movie", Parcels.wrap(movies));
+                i.putExtra("movie", Parcels.wrap(movie));
                 context.startActivity(i);
             }
         });
     }
 
-    public void  bindDatatoViewHolderPopular(ViewHolderPopular viewHolderPopular, int position){
-        final Movie movies = moviesList.get(position);
+    private void bindDatatoViewHolderPopular(ViewHolderPopular viewHolderPopular, int position) {
+        final Movie movie = movies.get(position);
         ImageView ivBackdrop = viewHolderPopular.backdrop;
         FrameLayout layout = viewHolderPopular.layout;
 
         TextView tvTitle = viewHolderPopular.tvPopTitle;
-        tvTitle.setText(movies.getTitle());
+        tvTitle.setText(movie.getTitle());
         TextView tvOverview = viewHolderPopular.tvPopOverview;
-        tvOverview.setText(movies.getOverview());
+        tvOverview.setText(movie.getOverview());
 
-        String imgUrl = movies.getBackdrop_path();
+
+        String imgUrl = movie.getBackdrop_path();
         Glide.with(context)
                 .load(imgUrl)
                 .apply(new RequestOptions().placeholder(R.drawable.placeholder).error(R.drawable.error))
-                .apply(new RequestOptions().transforms(new CenterInside(),new RoundedCorners(radius)))
+                .apply(new RequestOptions().transforms(new RoundedCorners(radius)))
                 .into(ivBackdrop);
 
         layout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //FetchTrailerKey
-                Log.i("IdAdapter", String.valueOf(movies.getMovieId()));
-                fetchTrailerKey(movies.getMovieId());
+                Log.i("IdAdapter", String.valueOf(movie.getMovieId()));
+                fetchTrailerKey(movie.getMovieId());
             }
         });
         //when long clicked show details
@@ -166,6 +206,7 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 return true;
             }
         });
+
     }
 
     private void fetchTrailerKey(int movieId) {
@@ -201,42 +242,6 @@ public class MovieAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
         });
     }
 
-    @Override
-    public int getItemCount() {
-        return 0;
-    }
-
-    public  class ViewHolderPopular extends RecyclerView.ViewHolder{
-        public ImageView backdrop;
-        public TextView tvPopTitle;
-        public TextView tvPopOverview;
-        public FrameLayout layout;
-
-        public ViewHolderPopular(@NonNull View itemView) {
-            super(itemView);
-            backdrop = (ImageView) itemView.findViewById(R.id.ivBackdrop);
-            tvPopTitle = (TextView) itemView.findViewById(R.id.tvPopTitle);
-            tvPopOverview = (TextView) itemView.findViewById(R.id.tvPopOverview);
-            layout = (FrameLayout) itemView.findViewById(R.id.trailerPopularLayout);
-        }
-
-
-    }
-    public class ViewHolderSimple extends RecyclerView.ViewHolder{
-        public ImageView ivPoster ;
-        public TextView ratingBar;
-        public TextView tvTitle;
-        public TextView date;
-       public  RelativeLayout container;
-
-        public ViewHolderSimple(@NonNull View itemView) {
-            super(itemView);
-            ivPoster = (ImageView) itemView.findViewById(R.id.ivPoster);
-            ratingBar = (TextView) itemView.findViewById(R.id.ratingBar);
-            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
-            date = (TextView) itemView.findViewById(R.id.date);
-        }
-    }
 
 
 }

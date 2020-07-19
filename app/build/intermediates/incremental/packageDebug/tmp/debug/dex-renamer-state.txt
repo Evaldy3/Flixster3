@@ -1,4 +1,4 @@
-#Sat Jul 18 00:17:36 EDT 2020
+#Sun Jul 19 01:40:32 EDT 2020
 base.0=C\:\\Users\\kasper\\Downloads\\Flixster\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 path.1=classes.dex
 renamed.1=classes2.dex

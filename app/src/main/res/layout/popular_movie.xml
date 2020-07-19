@@ -5,20 +5,19 @@
     android:id="@+id/container_popular"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="top"
-    android:gravity="top"
-    android:padding="10dp">
+    android:background="@drawable/gradient_background">
 
     <FrameLayout
         android:id="@+id/trailerPopularLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_width="392dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="15dp"
+        android:layout_height="180dp">
 
         <ImageView
             android:id="@+id/ivBackdrop"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_width="392dp"
+            android:layout_height="180dp"
             tools:srcCompat="@drawable/maxresdefault" />
 
         <ImageView

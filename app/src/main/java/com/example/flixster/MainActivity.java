@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String NOW_PLAYING_URL ="https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed" ;
     public static final String TAG = "MainActivity";
-
-    List<Movie>list;
+    RecyclerView rvMovies;
+    List<Movie>movies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,11 +39,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         RecyclerView rvMovies = findViewById(R.id.rvMovies);
-        list = new ArrayList<>();
+       movies = new ArrayList<>();
         // Create the adapter
-        final MovieAdapter movieAdapter = new MovieAdapter(list, MainActivity.this);
+        final MovieAdapter movieAdapter = new MovieAdapter(movies, this);
         // Set a Layout manager on Recycle view
-        rvMovies.setLayoutManager(new LinearLayoutManager(this));
+        rvMovies.setLayoutManager(new LinearLayoutManager(this ));
 
         // Set the adapter on Recycler View
             rvMovies.setAdapter(movieAdapter);
@@ -58,9 +58,9 @@ public class MainActivity extends AppCompatActivity {
                try {
                    JSONArray results = json.jsonObject.getJSONArray("results");
                    Log.i(TAG , "results" + results.toString());
-                   list.addAll(Movie.fromJsonArray(results));
+                 movies.addAll(Movie.fromJsonArray(results));
                    movieAdapter.notifyDataSetChanged();
-                   Log.i(TAG , "Movies" + list.size());
+                   Log.i(TAG , "Movies" + movies.size());
                } catch (JSONException e) {
                  Log.e(TAG ,"Hit json exception",e);
                }
@@ -78,4 +78,5 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
 }

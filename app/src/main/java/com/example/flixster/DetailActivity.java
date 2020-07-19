@@ -36,7 +36,8 @@ public class DetailActivity extends YouTubeBaseActivity {
    private static final String YOUTUBE_API_KEY = "AIzaSyAFLZuLldFslEtcStkPgvZ7E4NgQAb7w8E";
    private static final String VIDEOS_URL = "https://api.themoviedb.org/3/movie/%d/videos?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
 
-
+    List<Movie> movies;
+    Movie movie;
    TextView tvTitle;
    ImageView ivPoster;
    TextView tvOverview;
@@ -53,7 +54,8 @@ public class DetailActivity extends YouTubeBaseActivity {
         youTubePlayerView = findViewById(R.id.player);
         ivPoster = findViewById(R.id.ivPoster);
 
-        Movie movie = Parcels.unwrap(getIntent().getParcelableExtra("movie")) ;
+       // Movie movie = Parcels.unwrap(getIntent().getParcelableExtra("movie")) ;
+       movie = (Movie) Parcels.unwrap(getIntent().getParcelableExtra("movie"));
         tvTitle.setText(movie.getTitle());
        tvOverview.setText(movie.getOverview());
        ratingBar.setText(movie.getRating());
